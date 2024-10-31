@@ -14,3 +14,5 @@ Routing: Tanstack Router
 5. Cloudflare Worker receives server rendered HTML from the lambda and streams it down to the browser
 6. Dynamic content gets injected to the HTML document, page repaints, and potential hydration happens
 7. Done
+
+Inspired by https://github.com/threepointone/react-ppr-workers
