@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, Suspense, useEffect } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -27,6 +27,13 @@ const Step: React.FC<StepProps> = ({ number, children }) => {
 
 function HomeComponent() {
   const [count, setCount] = useState(0)
+
+  const [currentUrl, setCurrentUrl] = useState('');
+
+  // TODO: maybe we can wrap window.location.href in the use() hook?
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
   
   return (
     <div className="max-w-screen-sm p-2 text-sm">
@@ -36,7 +43,7 @@ function HomeComponent() {
       <button onClick={() => setCount(count => count + 1)} className='p-3 px-6 mb-2 text-white transition-colors border rounded-lg border-slate-800 bg-slate-950 hover:bg-black hover:border hover:border-slate-600 active:scale-[0.98]'>Count: {count}</button>
       <h2 className="mb-2 text-xl">PPR Flow</h2>
       <ol>
-        <Step number={1} >User makes request to {window.location.href}</Step>
+        <Step number={1} >User makes request to {currentUrl || 'loading...'}</Step>
         <Step number={2} >Request hits a Cloudflare Worker, prerendered HTML gets sent back instantly, at the same time the request gets forwarded to a Lambda function</Step>
         <Step number={3} >Browser receives the prerendered HTML and it gets displayed to the user</Step>
         <Step number={4} >Browser makes the necessary requests for static assets and JS for hydration, page gets repainted and the button gets hydrated</Step>

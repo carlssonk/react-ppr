@@ -4,12 +4,12 @@ import viteConfig from '../../vite.config.js';
 import { writeFile } from 'node:fs';
 
 const prerender = async (vite: ViteDevServer) => {
-  const { routeTreeChildren } = await vite.ssrLoadModule('./src/main.tsx');
-  const routePaths = routeTreeChildren.map((route: { options: { path: string; }; }) => route.options.path)
+  // const { routeTreeChildren } = await vite.ssrLoadModule('./src/main.tsx');
+  // const routePaths = routeTreeChildren.map((route: { options: { path: string; }; }) => route.options.path)
 
   const { handler } = await vite.ssrLoadModule('./src/server/app.tsx');
 
-  const promises = routePaths.map(async (path: string) => {
+  const promises = ['/'].map(async (path: string) => {
     const data = await handler({ queryStringParameters: { path } });
     return { data, path };
   });

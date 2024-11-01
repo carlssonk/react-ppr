@@ -1,3 +1,5 @@
+src/prerender/*.json
+
 # Local
 .DS_Store
 *.local

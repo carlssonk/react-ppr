@@ -1,0 +1,16 @@
+name = "react-ppr-workers"
+main = "./src/server/worker.ts"
+compatibility_date = "2024-10-10"
+compatibility_flags = ["nodejs_compat"]
+
+#assets = {directory = "./src"}
+
+workers_dev = true
+
+routes = [
+  {pattern = "react-ppr-workers.carlssonk.com", custom_domain = true }
+]
+
+[[services]]
+service = "react-ppr-workers"
+binding = "APP"

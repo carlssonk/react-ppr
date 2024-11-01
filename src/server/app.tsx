@@ -1,16 +1,20 @@
 /// <reference types="vite/client" />
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PassThrough, Stream } from 'node:stream'
+import { PassThrough, Stream, Writable } from 'node:stream'
 // @ts-expect-error no types
-import { resumeToPipeableStream } from 'react-dom/server.node'
+import { resumeToPipeableStream, renderToPipeableStream } from 'react-dom/server.node'
 // @ts-expect-error no types
 import { prerender } from 'react-dom/static.edge'
+// import { dehy } from '@tanstack/react-router';
+
 
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
 
 import { APIGatewayProxyEvent, Handler } from 'aws-lambda'
+import { StartServer } from '@tanstack/start/server'
+import SuperJSON from 'superjson'
 
 // Import all JSON files at build time
 const pages = import.meta.glob('../prerender/*.json', { eager: true })
@@ -105,9 +109,107 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
   const router = createRouter({
     routeTree: routeTree,
     history: memoryHistory,
+    // transformer: SuperJSON,
   })
 
   await router.load()
+
+  // if (IS_PRERENDER) {
+  //   return new Promise((resolve, reject) => {
+  //     let didError = false;
+  //     let html = '';
+  //     const postponed: Record<string, unknown> = {};
+      
+  //     const writable = new Writable({
+  //       write(chunk, encoding, callback) {
+  //         html += chunk;
+  //         callback();
+  //       }
+  //     });
+
+  //     writable.on('finish', () => {
+  //       const dehydratedRouter = router.dehydrate()
+        
+  //       // Ensure we have valid initial data
+  //       const initialMatchData = {
+  //         __beforeLoadContext: SuperJSON.stringify({}),
+  //         loaderData: SuperJSON.stringify({
+  //           data: {} // Empty object instead of undefined
+  //         }),
+  //         extracted: {}
+  //       };
+
+  //       // const tsrInitScript = `
+  //       //   <script>
+  //       //     window.__TSR__ = {
+  //       //       matches: [],
+  //       //       initMatch: function(index) {
+  //       //         if (this.matches[index]) {
+  //       //           const matchData = this.matches[index];
+  //       //           try {
+  //       //             if (matchData.__beforeLoadContext) {
+  //       //               matchData.__beforeLoadContext = SuperJSON.parse(matchData.__beforeLoadContext);
+  //       //             }
+  //       //             if (matchData.loaderData) {
+  //       //               matchData.loaderData = SuperJSON.parse(matchData.loaderData);
+  //       //             }
+  //       //           } catch (e) {
+  //       //             console.error('Error parsing match data:', e);
+  //       //             // Provide fallback data if parsing fails
+  //       //             matchData.__beforeLoadContext = {};
+  //       //             matchData.loaderData = { data: {} };
+  //       //           }
+  //       //         }
+  //       //       }
+  //       //     };
+  //       //     window.__TSR_INITIAL_STATE__ = ${SuperJSON.stringify(dehydratedRouter)};
+  //       //   </script>
+  //       // `;
+
+  //       // // Combine the HTML with the scripts in the correct order
+  //       // const finalHtml = `
+  //       //   ${tsrInitScript}
+  //       //   <div id="app">${html}</div>
+  //       // `;
+
+  //       resolve({
+  //         prelude: html,
+  //         postponed
+  //       });
+  //     });
+
+  //     writable.on('error', (error) => {
+  //       didError = true;
+  //       reject(error);
+  //     });
+
+  //     const { pipe, abort } = renderToPipeableStream(
+  //       <StartServer router={router} />,
+  //       {
+  //         onShellReady() {
+  //           pipe(writable);
+  //         },
+  //         onShellError(error) {
+  //           didError = true;
+  //           reject(error);
+  //         },
+  //         onError(error) {
+  //           didError = true;
+  //           console.error(error);
+  //         },
+  //         onPostpone(reason) {
+  //           postponed[reason] = true;
+  //         }
+  //       }
+  //     );
+
+  //     setImmediate(() => {
+  //       if (!didError) {
+  //         abort();
+  //       }
+  //     });
+  //   });
+  // }
 
   if (IS_PRERENDER) {
     type Prerendered = {
@@ -120,7 +222,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
       let result: Prerendered
       setImmediate(() => {
         try {
-          result = prerender(<RouterProvider router={router} />, {
+          result = prerender(<StartServer router={router} />, {
             signal: controller.signal,
           })
         } catch (error) {
