@@ -8,13 +8,16 @@ import { resumeToPipeableStream, renderToPipeableStream } from 'react-dom/server
 import { prerender } from 'react-dom/static.edge'
 // import { dehy } from '@tanstack/react-router';
 
+// import { createRouter } from '../router'
 
-import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+
+import { createMemoryHistory, RouterProvider, createRouter as createTanStackRouter} from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
 
 import { APIGatewayProxyEvent, Handler } from 'aws-lambda'
 import { StartServer } from '@tanstack/start/server'
 import SuperJSON from 'superjson'
+import { createRouter } from '../router'
 
 // Import all JSON files at build time
 const pages = import.meta.glob('../prerender/*.json', { eager: true })
@@ -44,7 +47,7 @@ function getJsonForPath(path: string): any {
 }
 
 
-declare const IS_PRERENDER: boolean | undefined
+declare const __BUILD_TARGET__: string | undefined
 
 // Function to convert a Node.js pipeable stream into a Web ReadableStream
 function toWebReadableStream(pipeableStream: Stream) {
@@ -97,22 +100,13 @@ const streamToBuffer = async (stream: any) => {
   return Buffer.concat(chunks)
 }
 
+
+const router = createRouter();
+export const routeTreeChildren = router.routeTree.children
+
+
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {
   const path = event.queryStringParameters?.path || '/'
-
-  // Create memory history for the requested URL
-  const memoryHistory = createMemoryHistory({
-    initialEntries: [path],
-  })
-
-  // Create a new router instance with the memory history
-  const router = createRouter({
-    routeTree: routeTree,
-    history: memoryHistory,
-    // transformer: SuperJSON,
-  })
-
-  await router.load()
 
   // if (IS_PRERENDER) {
   //   return new Promise((resolve, reject) => {
@@ -211,7 +205,18 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
   //   });
   // }
 
-  if (IS_PRERENDER) {
+  if (__BUILD_TARGET__ === 'prerender') {
+    const memoryHistory = createMemoryHistory({
+      initialEntries: [path],
+    })
+
+    const router = createTanStackRouter({
+      routeTree: routeTree,
+      history: memoryHistory,
+    })
+
+    await router.load()
+
     type Prerendered = {
       postponed: Record<string, unknown>;
       prelude: ReadableStream;

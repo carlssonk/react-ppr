@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev:vite": "vite",
-    "build:vite": "BUILD_MODE=client vite build",
-    "serve": "vite preview",
-    "prerender": "export NODE_ENV=production && npx tsx src/prerender/index.ts",
+    "dev": "vite",
+    "build": "npx tsx build.ts && npm run prerender",
+    "build:client": "vite build --mode client",
+    "build:server": "vite build --mode server",
+    "build:prerender": "vite build --mode prerender",
+    "prerender": "npx tsx prerender/index.ts",
     "dev:worker": "wrangler dev -c wrangler.toml",
-    "preview": "npm run prerender && concurrently \"npm run dev:worker\" \"sleep 1 && npm run serve\""
+    "preview": "concurrently \"npm run dev:worker\" \"sleep 1 && vite preview --outDir dist/client\"",
+    "build:preview": "npm run build && npm run preview"
   },
   "devDependencies": {
     "@tanstack/router-plugin": "^1.77.7",
@@ -21,6 +24,7 @@
     "autoprefixer": "^10.4.20",
     "aws-lambda": "^1.0.7",
     "concurrently": "^9.0.1",
+    "critical": "^7.2.1",
     "eslint": "^9.13.0",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
@@ -36,6 +40,7 @@
     "@tanstack/start": "^1.78.1",
     "react": "^0.0.0-experimental-603e6108-20241029",
     "react-dom": "^0.0.0-experimental-603e6108-20241029",
+    "react-helmet-async": "^2.0.5",
     "superjson": "^2.2.1",
     "vinxi": "^0.4.3"
   }

@@ -8,30 +8,25 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
-
-// Create Virtual Routes
-
-const AboutLazyImport = createFileRoute('/about')()
 
 // Create/Update Routes
 
-const AboutLazyRoute = AboutLazyImport.update({
+const AboutRoute = AboutImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -48,7 +43,7 @@ declare module '@tanstack/react-router' {
       id: '/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof AboutLazyImport
+      preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
   }
@@ -58,18 +53,18 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutLazyRoute
+  '/about': typeof AboutRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutLazyRoute
+  '/about': typeof AboutRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about': typeof AboutLazyRoute
+  '/about': typeof AboutRoute
 }
 
 export interface FileRouteTypes {
@@ -83,12 +78,12 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutLazyRoute: typeof AboutLazyRoute
+  AboutRoute: typeof AboutRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutLazyRoute: AboutLazyRoute,
+  AboutRoute: AboutRoute,
 }
 
 export const routeTree = rootRoute
@@ -109,7 +104,7 @@ export const routeTree = rootRoute
       "filePath": "index.tsx"
     },
     "/about": {
-      "filePath": "about.lazy.tsx"
+      "filePath": "about.tsx"
     }
   }
 }

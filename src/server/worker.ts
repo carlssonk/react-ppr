@@ -1,6 +1,6 @@
  
-import { prelude as preludeIndex } from '../prerender/index.json';
-import { prelude as preludeAbout } from '../prerender/about.json';
+import { prelude as preludeIndex } from '../../dist/prerender/routes/index.json';
+import { prelude as preludeAbout } from '../../dist/prerender/routes/about.json';
 // import { generateHTML } from './template';
 
 // interface Env {
@@ -25,81 +25,20 @@ export default {
       new ReadableStream({
         async start(controller) {
           try {
-            console.log(request)
+            console.log('HELLO')
+            // console.log(request)
             const url = new URL(request.url);
             const pathname = url.pathname;
-            console.log(pathname)
+            // console.log(pathname)
             // const isHtmlRequest = isHtmlDocumentRequest(request, pathname);
             const prelude = pathname === "/" ? preludeIndex : preludeAbout
-            const html  = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>React PPR</title>
-      <script>
-    // https://github.com/TanStack/router/blob/main/packages/start/src/client/Meta.tsx#L123
-    __TSR__ = {
-dehydrated: JSON.stringify({
-          payload: {},
-          router: {
-            state: {
-              dehydratedMatches: [{
-                id: '/', // This should match your root route ID
-                pathname: '/',
-                params: {},
-                data: null,
-                status: 200
-              }]
-            },
-            manifest: {
-              '/': {
-                id: '/',
-                path: '/'
-              }
-            }
-          }
-        }),
-      matches: [],
-      streamedValues: {},
-      initMatch: (index) => {
-        Object.entries(__TSR__.matches[index].extracted).forEach(([id, ex]) => {
-          if (ex.type === 'stream') {
-            let controller;
-            ex.value = new ReadableStream({
-              start(c) { controller = c; }
-            })
-            ex.value.controller = controller
-          } else if (ex.type === 'promise') {
-            let r, j
-            ex.value = new Promise((r_, j_) => { r = r_, j = j_ })
-            ex.resolve = r; ex.reject = j
-          }
-        })
-      },
-      cleanScripts: () => {
-        document.querySelectorAll('.tsr-once').forEach((el) => {
-          el.remove()
-        })
-      },
-    }
-  </script>
-  </head>
-  <body>
-    <script class="tsr-once">
-      window.__TSR__.matches[0] = {
-        id: '/',
-        "__beforeLoadContext": "{}",
-        "loaderData": "{}",
-        "extracted": {}
-      }; 
-      window.__TSR__.initMatch(0)
-    </script>
-    <div id="app">${prelude}</div>
-    <script type="module" src="client/client.VM54KWgB.js"></script>
-  </body>
-</html>`
-            controller.enqueue(new TextEncoder().encode(html));
+            
+            console.log(prelude)
+            console.log(pathname)
+            // const html = injectExternalScript(prelude, './client/client.Vy0fZga6.js');
+            // const html = injectExternalScript(prelude, './assets/client-DbWvQ1dq.js');
+            // const html = `<html><body><div id="app">${prelude}</div><script src="./assets/client-DS71mhGp.js"></script></body></html>`
+            controller.enqueue(new TextEncoder().encode(prelude));
             // if (isHtmlRequest) {
             //   // controller.enqueue(new TextEncoder().encode(generateHTML(prelude)));
             //   const restOfResponse = await fetch(`http://localhost:3000/dev?path=${pathname}`); // dynamic RSC api, can be lambda or ecs service etc.
@@ -127,6 +66,22 @@ dehydrated: JSON.stringify({
       },
     );
   },
+}
+
+function injectExternalScript(htmlString, scriptSrc) {
+  const bodyCloseIndex = htmlString.lastIndexOf('</body>');
+  
+  if (bodyCloseIndex === -1) {
+    throw new Error('Could not find closing body tag');
+  }
+
+  const scriptTag = `<script type="module" src="${scriptSrc}"></script>`;
+  
+  const modifiedHtml = htmlString.slice(0, bodyCloseIndex) + 
+                      scriptTag + 
+                      htmlString.slice(bodyCloseIndex);
+  
+  return modifiedHtml;
 }
 
 // Helper function to determine if this is an HTML document request

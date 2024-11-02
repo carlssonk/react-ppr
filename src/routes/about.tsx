@@ -1,7 +1,7 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
-export const Route = createLazyFileRoute('/about')({
+export const Route = createFileRoute('/about')({
   component: AboutComponent,
 })
 
@@ -11,7 +11,9 @@ function AboutComponent() {
   return (
     <div className="p-2">
       <h3>About</h3>
-      <button onClick={() => setCount(count => count + 1)}>Count: {count}</button>
+      <button onClick={() => setCount((count) => count + 1)}>
+        Count: {count}
+      </button>
     </div>
   )
 }
