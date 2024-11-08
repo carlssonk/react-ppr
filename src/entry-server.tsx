@@ -12,12 +12,12 @@ import { prerender } from 'react-dom/static.edge'
 
 
 import { createMemoryHistory, RouterProvider, createRouter as createTanStackRouter} from '@tanstack/react-router'
-import { routeTree } from '../routeTree.gen'
+import { routeTree } from './routeTree.gen'
 
 import { APIGatewayProxyEvent, Handler } from 'aws-lambda'
 import { StartServer } from '@tanstack/start/server'
 import SuperJSON from 'superjson'
-import { createRouter } from '../router'
+import { createRouter } from './router'
 
 // Import all JSON files at build time
 const pages = import.meta.glob('../prerender/*.json', { eager: true })
@@ -47,7 +47,7 @@ function getJsonForPath(path: string): any {
 }
 
 
-declare const __BUILD_TARGET__: string | undefined
+declare const __BUILD_TARGET__: 'prerender' | 'client' |'server' | undefined
 
 // Function to convert a Node.js pipeable stream into a Web ReadableStream
 function toWebReadableStream(pipeableStream: Stream) {

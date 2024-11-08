@@ -3,6 +3,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
+  meta: () => [
+    {
+      title: 'React PPR',
+    },
+  ],
   component: HomeComponent,
 })
 

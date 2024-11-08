@@ -8,9 +8,10 @@ import { Body, Head, Html, Meta, Scripts } from '@tanstack/start'
 import type { ReactNode } from 'react'
 import GithubLogo from "../assets/github-mark-white.svg"
 import CoolImg from "../assets/cool.jpg"
+import { Manifest } from 'vite'
 
-declare const __BUILD_TARGET__: string | undefined
-declare const __VITE_MANIFEST__: boolean | undefined
+declare const __BUILD_TARGET__: 'prerender' | 'client' |'server' | undefined
+declare const __VITE_MANIFEST__: Manifest | undefined
 
 export const Route = createRootRoute({
   ...(__BUILD_TARGET__ === 'prerender' && __VITE_MANIFEST__ && {
@@ -23,23 +24,19 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'LOL TanStack Start Starter',
+        title: 'React PPR',
       },
     ],
-    links: () => [
-      {
-        rel: 'icon',
-        href: '/favicon.ico',
-      },
-      {
-        rel: 'stylesheet',
-        href: __VITE_MANIFEST__['src/client.tsx'].css,
-      },
-    ],
+    links: () => {
+      const css = (__VITE_MANIFEST__['src/entry-client.tsx'].css || []).map((href) => ({ rel: 'stylesheet', href }))
+      return [
+        ...css
+      ]
+    },
     scripts: () => [
       {
         type: "module",
-        src: __VITE_MANIFEST__['src/client.tsx'].file
+        src: __VITE_MANIFEST__['src/entry-client.tsx'].file
       }
     ],
   }),
@@ -49,7 +46,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-             <div className="flex flex-col items-center justify-center w-full text-slate-200">
+        <div className="flex flex-col items-center justify-center w-full text-slate-200">
         <div className="relative flex w-full">
           <a className="absolute top-0 flex h-full right-32" href='https://google.com' target='_blank'>Source<img src={GithubLogo} alt="Logo" /></a>
           <a className="absolute top-0 flex h-full right-32" href='https://google.com' target='_blank'>Cool<img src={CoolImg} alt="Logo" /></a>
@@ -83,8 +80,8 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
-  return (
-    <Html>
+    return (
+      <Html>
       <Head>
         <Meta />
       </Head>
@@ -94,47 +91,5 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <Scripts />
       </Body>
     </Html>
-
-  )
+    )
 }
-// import { Link, Outlet, createRootRoute } from '@tanstack/react-router'
-// import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-// import GithubLogo from '../assets/github-mark-white.svg'
-
-// export const Route = createRootRoute({
-//   component: RootComponent,
-// })
-
-// function RootComponent() {
-//   return (
-//       <div className="flex flex-col items-center justify-center w-full text-slate-200">
-//         <div className="relative flex w-full">
-//           <a className="absolute top-0 flex h-full right-32" href='https://google.com' target='_blank'>Source<img src={GithubLogo} alt="Logo" /></a>
-//           <div className="flex items-center justify-center w-full border-b">
-//             <div className="flex gap-3 p-2 text-lg">
-//               <Link
-//                 to="/"
-//                 activeProps={{
-//                   className: 'font-bold',
-//                 }}
-//                 activeOptions={{ exact: true }}
-//               >
-//             Home
-//               </Link>{' '}
-//               <Link
-//                 to="/about"
-//                 activeProps={{
-//                   className: 'font-bold',
-//                 }}
-//               >
-//             About
-//               </Link>
-//             </div>
-//           </div>
-//         </div>
-//         <div className="h-4"></div>
-//         <Outlet />
-//         <TanStackRouterDevtools position="bottom-right" />
-//       </div>
-//   )
-// }

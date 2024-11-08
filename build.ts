@@ -18,6 +18,7 @@ const createBuildPromise = (mode: string) => {
   try {
     await Promise.all([
       createBuildPromise('client'),
+      createBuildPromise('worker'),
       createBuildPromise('prerender')
     ])
   } catch (error) {

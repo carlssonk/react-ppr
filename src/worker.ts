@@ -1,12 +1,14 @@
  
-import { prelude as preludeIndex } from '../../dist/prerender/routes/index.json';
-import { prelude as preludeAbout } from '../../dist/prerender/routes/about.json';
+// import prelude from '../dist/client/routes/prelude';
+// import { prelude as preludeAbout } from '../dist/client/routes/prelude/about.html';
 // import { generateHTML } from './template';
 
-// interface Env {
-//   APP_URL: string
-// }
+import { BASEURL } from "../vite.config";
 
+interface Env {
+  CLIENT: { fetch: (req: Request) => Promise<Response> }
+  ENVIRONMENT?: string
+}
 
 const headers = {
   'Content-Type': 'text/html; charset=utf-8',
@@ -17,7 +19,7 @@ const headers = {
 };
 
 export default {
-  async fetch(request: Request) {
+  async fetch(request: Request, env: Env) {
     // we want to start a new reponse that first writes the prelude HTML,
     // then streams restOfResponse
 
@@ -25,20 +27,25 @@ export default {
       new ReadableStream({
         async start(controller) {
           try {
-            console.log('HELLO')
-            // console.log(request)
             const url = new URL(request.url);
-            const pathname = url.pathname;
-            // console.log(pathname)
-            // const isHtmlRequest = isHtmlDocumentRequest(request, pathname);
-            const prelude = pathname === "/" ? preludeIndex : preludeAbout
-            
-            console.log(prelude)
-            console.log(pathname)
-            // const html = injectExternalScript(prelude, './client/client.Vy0fZga6.js');
-            // const html = injectExternalScript(prelude, './assets/client-DbWvQ1dq.js');
-            // const html = `<html><body><div id="app">${prelude}</div><script src="./assets/client-DS71mhGp.js"></script></body></html>`
-            controller.enqueue(new TextEncoder().encode(prelude));
+            const { pathname } = url
+
+            const pathToHTML = `${pathname === '/' ? 'index' : pathname.slice(1).replaceAll('/', '_')}.html`
+
+            const assetRequest = new Request(
+              `http://127.0.0.1/routes/prelude/${pathToHTML}`,
+              {
+              ...request,
+              redirect: 'follow'
+              }
+            )
+          
+            const asset = await env.CLIENT.fetch(assetRequest)
+            const preludeHTML = await asset.text()
+            const preludeHTMLPreview = preludeHTML.replaceAll(import.meta.env.BASE_URL, "/")
+    
+            controller.enqueue(new TextEncoder().encode(preludeHTMLPreview));
+
             // if (isHtmlRequest) {
             //   // controller.enqueue(new TextEncoder().encode(generateHTML(prelude)));
             //   const restOfResponse = await fetch(`http://localhost:3000/dev?path=${pathname}`); // dynamic RSC api, can be lambda or ecs service etc.
