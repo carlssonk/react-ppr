@@ -1,0 +1,29 @@
+service: react-ppr-lambda
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: eu-north-1
+  stage: ${opt:stage, 'dev'}
+
+functions:
+  renderPage:
+    handler: dist/lambda.handler
+    events:
+      - http:
+          path: /
+          method: get
+    environment:
+      NODE_ENV: ${opt:stage, 'production'}
+
+plugins:
+  - serverless-offline
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!src/**'
+    - 'dist/**'
+    - '!.vite/**'
